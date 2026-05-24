@@ -1,0 +1,74 @@
+name: Deploy to AWS Lightsail
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: privacy-toolbox-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to AWS Lightsail
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/aws_key
+          chmod 600 ~/.ssh/aws_key
+          ssh-keyscan -H "${{ secrets.AWS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sync project files to AWS
+        shell: bash
+        run: |
+          rsync -az --delete \
+            --exclude='.git' \
+            --exclude='.env' \
+            --exclude='.env.production' \
+            --exclude='node_modules' \
+            --exclude='.next' \
+            -e "ssh -i ~/.ssh/aws_key" \
+            ./ "${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }}:/opt/privacy-toolbox/"
+
+      - name: Upload production environment file
+        shell: bash
+        env:
+          PROD_ENV_FILE: ${{ secrets.PROD_ENV_FILE }}
+        run: |
+          printf '%s' "$PROD_ENV_FILE" | ssh -i ~/.ssh/aws_key \
+            "${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }}" \
+            "cat > /opt/privacy-toolbox/.env.production && chmod 600 /opt/privacy-toolbox/.env.production"
+
+      - name: Build and restart app
+        shell: bash
+        run: |
+          ssh -i ~/.ssh/aws_key "${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }}" '
+            set -e
+            cd /opt/privacy-toolbox
+
+            if grep -q "^APP_ENV=staging" .env.production; then
+              sed -i "1s#.*#http://{\$SITE_DOMAIN} {#" infra/caddy/Caddyfile
+            else
+              sed -i "1s#.*#{\$SITE_DOMAIN} {#" infra/caddy/Caddyfile
+            fi
+
+            docker compose \
+              -f infra/compose/docker-compose.prod.yml \
+              --env-file .env.production \
+              up -d --build --remove-orphans
+
+            docker image prune -f
+
+            docker compose \
+              -f infra/compose/docker-compose.prod.yml \
+              --env-file .env.production \
+              ps
+          '
