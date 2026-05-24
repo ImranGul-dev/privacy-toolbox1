@@ -1,0 +1,142 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --save 60 1 --loglevel warning --maxmemory ${REDIS_MAXMEMORY:-256mb} --maxmemory-policy noeviction
+    volumes: ["redis-data:/data"]
+    expose: ["6379"]
+    mem_limit: ${REDIS_MEM_LIMIT:-384m}
+    pids_limit: 128
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+      args:
+        C2PATOOL_SHA256: ${C2PATOOL_SHA256:-}
+    restart: unless-stopped
+    env_file: ../../.env.production
+    command: sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers $${API_WORKERS:-1}"
+    volumes: ["privacy-data:/data/privacy-toolbox"]
+    expose: ["8000"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    tmpfs:
+      - /tmp:size=${API_TMPFS_SIZE:-512m},mode=1777
+    mem_limit: ${API_MEM_LIMIT:-768m}
+    cpus: ${API_CPUS:-0.75}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infra/docker/worker.Dockerfile
+      args:
+        C2PATOOL_SHA256: ${C2PATOOL_SHA256:-}
+    restart: unless-stopped
+    env_file: ../../.env.production
+    command: sh -c "celery -A app.workers.celery_app.celery_app worker --loglevel=INFO --concurrency=$${WORKER_CONCURRENCY:-1} --max-tasks-per-child=$${WORKER_MAX_TASKS_PER_CHILD:-20}"
+    volumes: ["privacy-data:/data/privacy-toolbox"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    tmpfs:
+      - /tmp:size=${WORKER_TMPFS_SIZE:-1024m},mode=1777
+    mem_limit: ${WORKER_MEM_LIMIT:-1536m}
+    cpus: ${WORKER_CPUS:-1.0}
+    pids_limit: 512
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging: *default-logging
+
+  beat:
+    build:
+      context: ../..
+      dockerfile: infra/docker/worker.Dockerfile
+      args:
+        C2PATOOL_SHA256: ${C2PATOOL_SHA256:-}
+    restart: unless-stopped
+    env_file: ../../.env.production
+    command: celery -A app.workers.celery_app.celery_app beat --loglevel=INFO
+    volumes: ["privacy-data:/data/privacy-toolbox"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    mem_limit: ${BEAT_MEM_LIMIT:-256m}
+    cpus: ${BEAT_CPUS:-0.20}
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging: *default-logging
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+    restart: unless-stopped
+    env_file: ../../.env.production
+    expose: ["3000"]
+    depends_on:
+      api:
+        condition: service_healthy
+    mem_limit: ${WEB_MEM_LIMIT:-512m}
+    cpus: ${WEB_CPUS:-0.50}
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+    logging: *default-logging
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    env_file: ../../.env.production
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web:
+        condition: service_started
+      api:
+        condition: service_healthy
+    mem_limit: ${CADDY_MEM_LIMIT:-256m}
+    logging: *default-logging
+
+volumes:
+  privacy-data: {}
+  redis-data: {}
+  caddy-data: {}
+  caddy-config: {}
