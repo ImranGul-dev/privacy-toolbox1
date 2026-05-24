@@ -1,4 +1,4 @@
-{
+﻿{
   "family": "privacy-toolbox-web",
   "networkMode": "awsvpc",
   "requiresCompatibilities": [
@@ -6,12 +6,12 @@
   ],
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/privacy-toolbox-ecs-execution-role",
-  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/privacy-toolbox-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::459173176563:role/privacy-toolbox-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::459173176563:role/privacy-toolbox-ecs-task-role",
   "containerDefinitions": [
     {
       "name": "web",
-      "image": "ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/privacy-toolbox-web:REPLACE_IMAGE_TAG",
+      "image": "459173176563.dkr.ecr.ap-south-1.amazonaws.com/privacy-toolbox-web:REPLACE_IMAGE_TAG",
       "essential": true,
       "environment": [
         {
@@ -66,27 +66,27 @@
       "secrets": [
         {
           "name": "SECRET_KEY",
-          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/SECRET_KEY"
+          "valueFrom": "arn:aws:ssm:ap-south-1:459173176563:parameter/privacy-toolbox/prod/SECRET_KEY"
         },
         {
           "name": "DATABASE_URL",
-          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/DATABASE_URL"
+          "valueFrom": "arn:aws:ssm:ap-south-1:459173176563:parameter/privacy-toolbox/prod/DATABASE_URL"
         },
         {
           "name": "REDIS_URL",
-          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/REDIS_URL"
+          "valueFrom": "arn:aws:ssm:ap-south-1:459173176563:parameter/privacy-toolbox/prod/REDIS_URL"
         },
         {
           "name": "S3_BUCKET",
-          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/S3_BUCKET"
+          "valueFrom": "arn:aws:ssm:ap-south-1:459173176563:parameter/privacy-toolbox/prod/S3_BUCKET"
         },
         {
           "name": "STRIPE_SECRET_KEY",
-          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/STRIPE_SECRET_KEY"
+          "valueFrom": "arn:aws:ssm:ap-south-1:459173176563:parameter/privacy-toolbox/prod/STRIPE_SECRET_KEY"
         },
         {
           "name": "STRIPE_WEBHOOK_SECRET",
-          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/STRIPE_WEBHOOK_SECRET"
+          "valueFrom": "arn:aws:ssm:ap-south-1:459173176563:parameter/privacy-toolbox/prod/STRIPE_WEBHOOK_SECRET"
         }
       ],
       "logConfiguration": {
@@ -112,3 +112,4 @@
     }
   ]
 }
+
