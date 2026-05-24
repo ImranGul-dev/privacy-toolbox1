@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 concurrency:
   group: privacy-toolbox-production
@@ -22,9 +23,10 @@ jobs:
         shell: bash
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/aws_key
+          printf '%s' "${{ secrets.AWS_SSH_PRIVATE_KEY_B64 }}" | base64 -d > ~/.ssh/aws_key
           chmod 600 ~/.ssh/aws_key
           ssh-keyscan -H "${{ secrets.AWS_HOST }}" >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/aws_key -o BatchMode=yes -o ConnectTimeout=10 "${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }}" "echo SSH connected"
 
       - name: Sync project files to AWS
         shell: bash
