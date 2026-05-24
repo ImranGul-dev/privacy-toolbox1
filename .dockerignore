@@ -1,0 +1,46 @@
+# Git and editor files
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+*.pem
+*.key
+*.crt
+
+# Node / Next.js
+node_modules
+**/node_modules
+.next
+**/.next
+out
+coverage
+
+# Python
+__pycache__
+**/__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.venv
+venv
+
+# Runtime data and temporary files
+storage
+.storage
+data
+logs
+*.log
+*.tmp
+*.zip
+
+# OS/tool cache
+.cache
+pnpm-store

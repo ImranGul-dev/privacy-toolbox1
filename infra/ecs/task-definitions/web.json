@@ -1,0 +1,114 @@
+{
+  "family": "privacy-toolbox-web",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/privacy-toolbox-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/privacy-toolbox-ecs-task-role",
+  "containerDefinitions": [
+    {
+      "name": "web",
+      "image": "ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/privacy-toolbox-web:REPLACE_IMAGE_TAG",
+      "essential": true,
+      "environment": [
+        {
+          "name": "APP_ENV",
+          "value": "production"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "ap-south-1"
+        },
+        {
+          "name": "STORAGE_BACKEND",
+          "value": "s3"
+        },
+        {
+          "name": "CELERY_DEFAULT_QUEUE",
+          "value": "default"
+        },
+        {
+          "name": "CELERY_LIGHT_QUEUE",
+          "value": "light"
+        },
+        {
+          "name": "CELERY_HEAVY_QUEUE",
+          "value": "heavy"
+        },
+        {
+          "name": "NEXT_PUBLIC_API_BASE_URL",
+          "value": "https://yourdomain.com"
+        },
+        {
+          "name": "NEXT_PUBLIC_SITE_URL",
+          "value": "https://yourdomain.com"
+        },
+        {
+          "name": "FRONTEND_URL",
+          "value": "https://yourdomain.com"
+        },
+        {
+          "name": "API_PUBLIC_URL",
+          "value": "https://yourdomain.com"
+        },
+        {
+          "name": "CORS_ORIGINS",
+          "value": "https://yourdomain.com"
+        },
+        {
+          "name": "AUTH_COOKIE_SECURE",
+          "value": "true"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "SECRET_KEY",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/SECRET_KEY"
+        },
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/DATABASE_URL"
+        },
+        {
+          "name": "REDIS_URL",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/REDIS_URL"
+        },
+        {
+          "name": "S3_BUCKET",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/S3_BUCKET"
+        },
+        {
+          "name": "STRIPE_SECRET_KEY",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/STRIPE_SECRET_KEY"
+        },
+        {
+          "name": "STRIPE_WEBHOOK_SECRET",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/STRIPE_WEBHOOK_SECRET"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/privacy-toolbox/web",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "command": [
+        "node",
+        "server.js"
+      ],
+      "readonlyRootFilesystem": false,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ]
+    }
+  ]
+}

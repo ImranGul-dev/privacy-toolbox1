@@ -1,0 +1,380 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 248 250 252;
+  --bg-elevated: 255 255 255;
+  --bg-muted: 239 246 255;
+  --text: 15 23 42;
+  --text-muted: 71 85 105;
+  --text-soft: 100 116 139;
+  --primary: 15 76 129;
+  --primary-hover: 11 61 104;
+  --secondary: 15 118 110;
+  --accent: 109 94 252;
+  --success: 22 163 74;
+  --warning: 217 119 6;
+  --danger: 220 38 38;
+  --border: 226 232 240;
+}
+
+.dark {
+  --bg: 3 7 18;
+  --bg-elevated: 15 23 42;
+  --bg-muted: 30 41 59;
+  --text: 241 245 249;
+  --text-muted: 203 213 225;
+  --text-soft: 148 163 184;
+  --primary: 96 165 250;
+  --primary-hover: 147 197 253;
+  --secondary: 45 212 191;
+  --accent: 167 139 250;
+  --border: 51 65 85;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 12% 6%, rgba(37, 99, 235, 0.1), transparent 34rem),
+    radial-gradient(circle at 82% 10%, rgba(20, 184, 166, 0.1), transparent 30rem),
+    rgb(var(--bg));
+  color: rgb(var(--text));
+  font-family:
+    Inter,
+    Manrope,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+::selection {
+  background: rgba(15, 76, 129, 0.16);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: rgb(var(--text));
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: clamp(2.25rem, 5vw, 3.7rem);
+}
+
+h2 {
+  font-size: clamp(1.85rem, 3.4vw, 2.7rem);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
+}
+
+p {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+@layer components {
+  .site-container {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-pad {
+    @apply py-14 sm:py-16 lg:py-20;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-line bg-white/80 px-3 py-1 text-xs font-semibold text-brand shadow-sm backdrop-blur;
+  }
+
+  .heading-xl {
+    @apply max-w-4xl text-ink;
+    font-size: clamp(2.35rem, 5vw, 3.7rem);
+    line-height: 1.07;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+  }
+
+  .heading-lg {
+    @apply text-ink;
+    font-size: clamp(1.9rem, 3.5vw, 2.65rem);
+    line-height: 1.12;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  .heading-md {
+    @apply text-ink;
+    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+    line-height: 1.22;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  .lead {
+    @apply max-w-2xl text-subtle;
+    font-size: clamp(1rem, 1.3vw, 1.08rem);
+    line-height: 1.72;
+    font-weight: 400;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply bg-brand text-white shadow-card hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-lift;
+  }
+
+  .btn-secondary {
+    @apply border border-line bg-white text-ink shadow-sm hover:-translate-y-0.5 hover:border-brand/25 hover:shadow-card;
+  }
+
+  .btn-ghost {
+    @apply text-subtle hover:bg-slate-100 hover:text-ink;
+  }
+
+  .card {
+    @apply rounded-3xl border border-line bg-white/90 shadow-card backdrop-blur;
+  }
+
+  .glass-card {
+    @apply rounded-3xl border border-white/70 bg-white/75 shadow-soft backdrop-blur-xl;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border border-line bg-slate-50 px-2.5 py-1 text-[11px] font-semibold leading-none text-subtle;
+  }
+
+  .badge-blue {
+    @apply border-blue-100 bg-blue-50 text-blue-700;
+  }
+
+  .badge-green {
+    @apply border-emerald-100 bg-emerald-50 text-emerald-700;
+  }
+
+  .badge-amber {
+    @apply border-amber-100 bg-amber-50 text-amber-700;
+  }
+
+  .input {
+    @apply w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-brand/45 focus:ring-4 focus:ring-brand/10;
+  }
+
+  .tool-card {
+    @apply relative flex h-full min-h-[344px] flex-col overflow-hidden rounded-3xl border border-line bg-white p-5 shadow-card transition duration-300 hover:-translate-y-1 hover:border-brand/30 hover:shadow-lift;
+  }
+
+  .tool-card::before {
+    content: "";
+    @apply absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-brand/30 to-transparent opacity-0 transition;
+  }
+
+  .tool-card:hover::before {
+    opacity: 1;
+  }
+
+  .tool-card-top {
+    @apply flex min-h-11 items-start justify-between gap-3;
+  }
+
+  .tool-card-icon {
+    @apply grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-50 text-brand;
+  }
+
+  .tool-card-body {
+    @apply mt-5 flex flex-1 flex-col;
+  }
+
+  .tool-card-category {
+    @apply min-h-[30px];
+  }
+
+  .tool-card-title {
+    @apply mt-3 min-h-[56px] text-lg font-bold leading-7 tracking-tight text-ink;
+  }
+
+  .tool-card-desc {
+    @apply mt-2 flex-1 text-sm leading-6 text-subtle;
+  }
+
+  .tool-card-footer {
+    @apply mt-5 flex min-h-[41px] items-center justify-between gap-4 border-t border-line pt-4;
+  }
+
+  .tool-card-formats {
+    @apply text-xs font-semibold leading-5 text-soft;
+  }
+
+  .tool-card-action {
+    @apply inline-flex shrink-0 items-center gap-1 text-sm font-bold text-brand;
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .animate-soft-pop {
+    animation: soft-pop 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+.gradient-orb {
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.18),
+    rgba(20, 184, 166, 0.14),
+    rgba(124, 58, 237, 0.16)
+  );
+  filter: blur(32px);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.35);
+  border-radius: 999px;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes soft-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .site-container {
+    @apply px-5;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .site-container {
+    @apply px-4;
+  }
+
+  .section-pad {
+    @apply py-12;
+  }
+
+  .btn {
+    @apply w-full px-4 py-3 text-sm;
+  }
+
+  .tool-card {
+    @apply min-h-[320px] p-5;
+  }
+
+  .tool-card-title {
+    @apply min-h-0;
+  }
+}
+
+@keyframes mobile-menu-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mobile-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-mobile-menu {
+  animation: mobile-menu-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.animate-mobile-backdrop {
+  animation: mobile-backdrop-in 0.22s ease-out both;
+}

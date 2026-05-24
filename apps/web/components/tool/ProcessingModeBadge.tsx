@@ -1,0 +1,1 @@
+export function ProcessingModeBadge(){return <span className="badge">Server-assisted when required by file type or size</span>}

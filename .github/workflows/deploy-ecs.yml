@@ -1,0 +1,164 @@
+name: Deploy to AWS ECS
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_migrations:
+        description: "Run database migrations before deployment"
+        required: false
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'ap-south-1' }}
+  ECR_WEB_REPOSITORY: privacy-toolbox-web
+  ECR_API_REPOSITORY: privacy-toolbox-api
+  ECR_WORKER_REPOSITORY: privacy-toolbox-worker
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER || 'privacy-toolbox-prod' }}
+  ECS_WEB_SERVICE: ${{ vars.ECS_WEB_SERVICE || 'privacy-toolbox-web' }}
+  ECS_API_SERVICE: ${{ vars.ECS_API_SERVICE || 'privacy-toolbox-api' }}
+  ECS_WORKER_LIGHT_SERVICE: ${{ vars.ECS_WORKER_LIGHT_SERVICE || 'privacy-toolbox-worker-light' }}
+  ECS_WORKER_HEAVY_SERVICE: ${{ vars.ECS_WORKER_HEAVY_SERVICE || 'privacy-toolbox-worker-heavy' }}
+  ECS_BEAT_SERVICE: ${{ vars.ECS_BEAT_SERVICE || 'privacy-toolbox-beat' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push web image
+        id: build-web
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f infra/docker/web.Dockerfile \
+            --build-arg NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL }} \
+            --build-arg NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL }} \
+            -t $ECR_REGISTRY/$ECR_WEB_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_WEB_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_WEB_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push api image
+        id: build-api
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f infra/docker/api.Dockerfile -t $ECR_REGISTRY/$ECR_API_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_API_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_API_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push worker image
+        id: build-worker
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f infra/docker/worker.Dockerfile -t $ECR_REGISTRY/$ECR_WORKER_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_WORKER_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_WORKER_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Run migrations as one-off ECS task when requested
+        if: ${{ github.event.inputs.run_migrations == 'true' }}
+        run: |
+          echo "Add your one-off ECS migration task command here after PostgreSQL migration code exists."
+          echo "Do not run destructive migrations automatically."
+
+      - name: Render API task definition
+        id: task-api
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: infra/ecs/task-definitions/api.json
+          container-name: api
+          image: ${{ steps.build-api.outputs.image }}
+
+      - name: Deploy API service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-api.outputs.task-definition }}
+          service: ${{ env.ECS_API_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Render web task definition
+        id: task-web
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: infra/ecs/task-definitions/web.json
+          container-name: web
+          image: ${{ steps.build-web.outputs.image }}
+
+      - name: Deploy web service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-web.outputs.task-definition }}
+          service: ${{ env.ECS_WEB_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Render light worker task definition
+        id: task-worker-light
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: infra/ecs/task-definitions/worker-light.json
+          container-name: worker-light
+          image: ${{ steps.build-worker.outputs.image }}
+
+      - name: Deploy light worker service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-worker-light.outputs.task-definition }}
+          service: ${{ env.ECS_WORKER_LIGHT_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Render heavy worker task definition
+        id: task-worker-heavy
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: infra/ecs/task-definitions/worker-heavy.json
+          container-name: worker-heavy
+          image: ${{ steps.build-worker.outputs.image }}
+
+      - name: Deploy heavy worker service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-worker-heavy.outputs.task-definition }}
+          service: ${{ env.ECS_WORKER_HEAVY_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Render beat task definition
+        id: task-beat
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: infra/ecs/task-definitions/beat.json
+          container-name: beat
+          image: ${{ steps.build-worker.outputs.image }}
+
+      - name: Deploy beat service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-beat.outputs.task-definition }}
+          service: ${{ env.ECS_BEAT_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

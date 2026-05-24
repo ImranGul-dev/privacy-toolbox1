@@ -1,0 +1,14 @@
+{
+  "Rules": [
+    {"ID":"expire-tmp","Status":"Enabled","Filter":{"Prefix":"tmp/"},"Expiration":{"Days":1}},
+    {"ID":"expire-uploads","Status":"Enabled","Filter":{"Prefix":"uploads/"},"Expiration":{"Days":3}},
+    {"ID":"expire-free-outputs","Status":"Enabled","Filter":{"Prefix":"outputs/free/"},"Expiration":{"Days":1}},
+    {"ID":"expire-pro-outputs","Status":"Enabled","Filter":{"Prefix":"outputs/pro/"},"Expiration":{"Days":7}},
+    {"ID":"expire-team-outputs","Status":"Enabled","Filter":{"Prefix":"outputs/team/"},"Expiration":{"Days":30}},
+    {"ID":"expire-business-outputs","Status":"Enabled","Filter":{"Prefix":"outputs/business/"},"Expiration":{"Days":90}},
+    {"ID":"expire-free-reports","Status":"Enabled","Filter":{"Prefix":"reports/free/"},"Expiration":{"Days":1}},
+    {"ID":"expire-pro-reports","Status":"Enabled","Filter":{"Prefix":"reports/pro/"},"Expiration":{"Days":7}},
+    {"ID":"expire-team-reports","Status":"Enabled","Filter":{"Prefix":"reports/team/"},"Expiration":{"Days":30}},
+    {"ID":"expire-business-reports","Status":"Enabled","Filter":{"Prefix":"reports/business/"},"Expiration":{"Days":90}}
+  ]
+}

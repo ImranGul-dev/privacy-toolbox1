@@ -1,0 +1,174 @@
+{
+  "family": "privacy-toolbox-beat",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/privacy-toolbox-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/privacy-toolbox-ecs-task-role",
+  "containerDefinitions": [
+    {
+      "name": "beat",
+      "image": "ACCOUNT_ID.dkr.ecr.ap-south-1.amazonaws.com/privacy-toolbox-worker:REPLACE_IMAGE_TAG",
+      "essential": true,
+      "environment": [
+        {
+          "name": "APP_ENV",
+          "value": "production"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "ap-south-1"
+        },
+        {
+          "name": "STORAGE_BACKEND",
+          "value": "s3"
+        },
+        {
+          "name": "CELERY_DEFAULT_QUEUE",
+          "value": "default"
+        },
+        {
+          "name": "CELERY_LIGHT_QUEUE",
+          "value": "light"
+        },
+        {
+          "name": "CELERY_HEAVY_QUEUE",
+          "value": "heavy"
+        },
+        {
+          "name": "FRONTEND_URL",
+          "value": "https://yourdomain.com"
+        },
+        {
+          "name": "API_PUBLIC_URL",
+          "value": "https://yourdomain.com"
+        },
+        {
+          "name": "CORS_ORIGINS",
+          "value": "https://yourdomain.com"
+        },
+        {
+          "name": "AUTH_COOKIE_SECURE",
+          "value": "true"
+        },
+        {
+          "name": "REQUIRE_SMTP_IN_PRODUCTION",
+          "value": "true"
+        },
+        {
+          "name": "REQUIRE_OAUTH_PROVIDERS_IN_PRODUCTION",
+          "value": "true"
+        },
+        {
+          "name": "USER_STORAGE_BACKEND",
+          "value": "postgres"
+        },
+        {
+          "name": "QUOTA_BACKEND",
+          "value": "redis"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "SECRET_KEY",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/SECRET_KEY"
+        },
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/DATABASE_URL"
+        },
+        {
+          "name": "REDIS_URL",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/REDIS_URL"
+        },
+        {
+          "name": "S3_BUCKET",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/S3_BUCKET"
+        },
+        {
+          "name": "STRIPE_SECRET_KEY",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/STRIPE_SECRET_KEY"
+        },
+        {
+          "name": "STRIPE_WEBHOOK_SECRET",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/STRIPE_WEBHOOK_SECRET"
+        },
+        {
+          "name": "SMTP_HOST",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/SMTP_HOST"
+        },
+        {
+          "name": "SMTP_USER",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/SMTP_USER"
+        },
+        {
+          "name": "SMTP_PASSWORD",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/SMTP_PASSWORD"
+        },
+        {
+          "name": "SMTP_FROM_EMAIL",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/SMTP_FROM_EMAIL"
+        },
+        {
+          "name": "GOOGLE_CLIENT_ID",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/GOOGLE_CLIENT_ID"
+        },
+        {
+          "name": "GOOGLE_CLIENT_SECRET",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/GOOGLE_CLIENT_SECRET"
+        },
+        {
+          "name": "GOOGLE_REDIRECT_URI",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/GOOGLE_REDIRECT_URI"
+        },
+        {
+          "name": "MICROSOFT_CLIENT_ID",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/MICROSOFT_CLIENT_ID"
+        },
+        {
+          "name": "MICROSOFT_CLIENT_SECRET",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/MICROSOFT_CLIENT_SECRET"
+        },
+        {
+          "name": "MICROSOFT_TENANT_ID",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/MICROSOFT_TENANT_ID"
+        },
+        {
+          "name": "MICROSOFT_REDIRECT_URI",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/MICROSOFT_REDIRECT_URI"
+        },
+        {
+          "name": "GITHUB_CLIENT_ID",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/GITHUB_CLIENT_ID"
+        },
+        {
+          "name": "GITHUB_CLIENT_SECRET",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/GITHUB_CLIENT_SECRET"
+        },
+        {
+          "name": "GITHUB_REDIRECT_URI",
+          "valueFrom": "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/privacy-toolbox/prod/GITHUB_REDIRECT_URI"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/privacy-toolbox/beat",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "command": [
+        "celery",
+        "-A",
+        "app.workers.celery_app.celery_app",
+        "beat",
+        "--loglevel=INFO"
+      ],
+      "readonlyRootFilesystem": false
+    }
+  ]
+}
