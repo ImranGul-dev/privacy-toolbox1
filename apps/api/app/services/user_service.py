@@ -288,15 +288,17 @@ def create_user(email: str, password: str, name: str = '') -> dict[str, Any]:
         'auth_provider': 'password',
         'created_at': _now().isoformat(),
     }
+    import os
+
+    if os.getenv("SKIP_EMAIL_VERIFICATION", "false").lower() == "true":
+        user["email_verified"] = True
+        user["verification_code"] = None
+    else:
+        send_verification_code(email, code, name)
+
     users[email] = user
     _save_users(users)
-    import os
-        if os.getenv("SKIP_EMAIL_VERIFICATION", "false").lower() == "true":
-            user["email_verified"] = True
-            user["verification_code"] = None
-        else:
-            send_verification_code(email, code, name)
-    return _public_user(user) | {'verification_sent': True}
+    return _public_user(user) | {"verification_sent": not user.get("email_verified", False)}
 
 
 def resend_verification(email: str) -> dict[str, Any]:
