@@ -69,6 +69,10 @@
         {
           "name": "QUOTA_BACKEND",
           "value": "redis"
+        },
+        {
+          "name": "SKIP_EMAIL_VERIFICATION",
+          "value": "true"
         }
       ],
       "secrets": [

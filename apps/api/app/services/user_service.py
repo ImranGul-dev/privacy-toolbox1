@@ -290,7 +290,12 @@ def create_user(email: str, password: str, name: str = '') -> dict[str, Any]:
     }
     users[email] = user
     _save_users(users)
-    send_verification_code(email, code, name)
+    import os
+        if os.getenv("SKIP_EMAIL_VERIFICATION", "false").lower() == "true":
+            user["email_verified"] = True
+            user["verification_code"] = None
+        else:
+            send_verification_code(email, code, name)
     return _public_user(user) | {'verification_sent': True}
 
 
