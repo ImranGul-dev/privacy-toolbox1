@@ -1,11 +1,11 @@
-﻿{
+{
   "family": "privacy-toolbox-api",
   "networkMode": "awsvpc",
   "requiresCompatibilities": [
     "FARGATE"
   ],
-  "cpu": "512",
-  "memory": "1024",
+  "cpu": "1024",
+  "memory": "2048",
   "executionRoleArn": "arn:aws:iam::459173176563:role/privacy-toolbox-ecs-execution-role",
   "taskRoleArn": "arn:aws:iam::459173176563:role/privacy-toolbox-ecs-task-role",
   "containerDefinitions": [
@@ -16,7 +16,7 @@
       "environment": [
         {
           "name": "APP_ENV",
-          "value": "production"
+          "value": "staging"
         },
         {
           "name": "AWS_REGION",
@@ -40,19 +40,19 @@
         },
         {
           "name": "FRONTEND_URL",
-          "value": "https://yourdomain.com"
+          "value": "http://privacy-toolbox-alb-1454761332.ap-south-1.elb.amazonaws.com"
         },
         {
           "name": "API_PUBLIC_URL",
-          "value": "https://yourdomain.com"
+          "value": "http://privacy-toolbox-alb-1454761332.ap-south-1.elb.amazonaws.com"
         },
         {
           "name": "CORS_ORIGINS",
-          "value": "https://yourdomain.com"
+          "value": "http://privacy-toolbox-alb-1454761332.ap-south-1.elb.amazonaws.com"
         },
         {
           "name": "AUTH_COOKIE_SECURE",
-          "value": "true"
+          "value": "false"
         },
         {
           "name": "REQUIRE_SMTP_IN_PRODUCTION",
@@ -192,4 +192,3 @@
     }
   ]
 }
-
